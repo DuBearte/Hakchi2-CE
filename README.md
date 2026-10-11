@@ -68,4 +68,3 @@ doing that.
 - **Windows:** open `hakchi_gui.sln` in Visual Studio, or see `.github/workflows/dotnet-desktop.yml`.
 - **Linux:** see [Building from source](linux/README-linux.md#building-from-source); the AppImage is built by
   `linux/appimage/build-appimage.sh`.
-- **Arch (AUR):** packaging files are in [`linux/aur`](linux/aur).
