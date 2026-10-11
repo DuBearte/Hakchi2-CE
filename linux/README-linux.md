@@ -33,6 +33,9 @@ next to the program. Then:
 
 ## Notes and known limitations
 
+- **Tiling window managers (Hyprland/Omarchy, i3, Sway):** if the main window stops responding, a dialog is
+  probably open behind it or on another workspace. Find it with `hyprctl clients` (Hyprland), or make the
+  main window float (Omarchy: **Super + T**).
 - **Driver install button:** that's a Windows-only step. On Linux the udev rule above replaces it.
 - **Network (SSH) connection:** once hakchi is installed, the console shows up as a USB Ethernet device.
   If hakchi stays "Offline", set that connection's IPv4 method to **Link-Local Only** in your network settings.
