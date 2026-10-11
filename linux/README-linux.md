@@ -8,10 +8,16 @@ syncing before you flash a custom kernel**, and keep your NAND backup safe.
 
 | Distro | Command |
 | --- | --- |
-| Arch, Manjaro, EndeavourOS | `sudo pacman -S mono libgdiplus libusb` |
+| Arch, Manjaro, EndeavourOS, Omarchy | `sudo pacman -S mono libgdiplus libusb` |
 | Debian, Ubuntu, Mint, Pop!_OS | `sudo apt install mono-complete libgdiplus libusb-1.0-0` |
+| Fedora | `sudo dnf install mono-complete libgdiplus libusb1` (see note below) |
+
+**Fedora:** Mono packaging has changed between Fedora releases. If `dnf` can't find `mono-complete`, use the
+packages from the [Mono project's download page](https://www.mono-project.com/download/stable/) instead. Fedora
+is untested so far; reports welcome.
 
 Other distros: install Mono (including its WinForms library), libgdiplus and libusb 1.0 from your package manager.
+Arch-based distros have been tested with a real console; Debian/Ubuntu are what the CI build runs on.
 
 ## 2. Allow USB access (once)
 
@@ -22,6 +28,21 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 Unplug and replug the console afterwards. (If you installed an older `99-hakchi.rules`, delete it:
 it was ordered after systemd's `73-seat-late.rules`, so it never granted access.)
+
+### Distros without systemd (Void, Alpine, Artix, Gentoo with OpenRC, …)
+
+`70-hakchi.rules` uses `TAG+="uaccess"`, which only works with systemd-logind. Without it, grant access through
+a group instead (log out and back in afterwards so the new group applies):
+
+```sh
+sudo groupadd -f plugdev
+sudo usermod -aG plugdev "$USER"
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="efe8", MODE="0660", GROUP="plugdev"' \
+  | sudo tee /etc/udev/rules.d/70-hakchi.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+Check with `groups` that `plugdev` is listed, then replug the console.
 
 ## 3. Run
 
