@@ -45,15 +45,11 @@ namespace com.clusterrr.ssh
                     if (listeners == null)
                     {
                         listeners = new List<IListener>();
-                        try
-                        {
+                        // Tmds.MDns calls GetIPv6Properties(), which Mono does not implement on Linux, both at start and
+                        // from a network-change handler it leaves registered (an unhandled thread-pool exception that kills
+                        // the app). Off Windows, DnsListener does its own mDNS lookup instead.
+                        if (com.clusterrr.hakchi_gui.Shared.isWindows)
                             listeners.Add(new MdnsListener(serviceName, serviceType));
-                        }
-                        catch (Exception ex)
-                        {
-                            // Tmds.MDns calls GetIPv6Properties(), which Mono does not implement on Linux; fall back to DNS lookups.
-                            Trace.WriteLine("mDNS discovery unavailable, falling back to DNS: " + ex.Message);
-                        }
                         listeners.Add(new DnsListener(serviceName));
                     }
 

@@ -54,6 +54,19 @@ namespace com.clusterrr.ssh
                         // no-op (dns resolution fail causes exception)
                     }
                 }
+
+                // No system mDNS resolver (avahi/nss-mdns, systemd-resolved): ask the network directly
+                if (devices.Count == 0 && !com.clusterrr.hakchi_gui.Shared.isWindows)
+                {
+                    var addresses = MdnsHostResolver.Resolve(serviceName + ".local");
+                    if (addresses.Count > 0)
+                    {
+                        Trace.WriteLine("mDNS lookup returned IPs: " + string.Join(", ", addresses));
+                        lastUpdated = DateTime.Now;
+                        foreach (var address in addresses)
+                            devices.Add(new Device() { Addresses = new List<IPAddress>() { address }, Port = SshClientWrapper.DEFAULT_SSH_PORT });
+                    }
+                }
             }
         }
 
