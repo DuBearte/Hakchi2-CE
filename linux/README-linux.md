@@ -1,0 +1,95 @@
+# Hakchi2 CE on Linux
+
+Hakchi2 CE is a Windows Forms app. On Linux it runs under [Mono](https://www.mono-project.com/).
+Linux support is new and has had little testing with real consoles, so **try memboot / adding games and
+syncing before you flash a custom kernel**, and keep your NAND backup safe.
+
+## 1. Install dependencies
+
+| Distro | Command |
+| --- | --- |
+| Arch, Manjaro, EndeavourOS | `sudo pacman -S mono libgdiplus libusb` |
+| Debian, Ubuntu, Mint, Pop!_OS | `sudo apt install mono-complete libgdiplus libusb-1.0-0` |
+
+Other distros: install Mono (including its WinForms library), libgdiplus and libusb 1.0 from your package manager.
+
+## 2. Allow USB access (once)
+
+```sh
+sudo cp 70-hakchi.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+Unplug and replug the console afterwards. (If you installed an older `99-hakchi.rules`, delete it:
+it was ordered after systemd's `73-seat-late.rules`, so it never granted access.)
+
+## 3. Run
+
+Extract the archive somewhere you can write to (for example `~/hakchi2-ce`); settings and games are kept
+next to the program. Then:
+
+```sh
+./hakchi.sh
+```
+
+## 4. Connect the console (USB network)
+
+Once hakchi is installed on the console, it shows up as a USB network device (`rndis_host`, an interface
+like `enp…u2`) and always uses the address **169.254.13.37**. Your PC needs an address on the same
+link-local network, and your firewall must accept traffic from it.
+
+Quick test (lasts until you unplug; replace the interface name with yours from `ip -br link`):
+
+```sh
+sudo ip addr add 169.254.1.2/16 dev enp193s0f3u2
+ping -c 3 169.254.13.37
+```
+
+Permanent setup with NetworkManager (most desktops, including Omarchy):
+
+```sh
+sudo nmcli connection add type ethernet con-name hakchi match.driver rndis_host \
+  ipv4.method link-local ipv6.method link-local connection.autoconnect-priority 10
+```
+
+With systemd-networkd instead, create `/etc/systemd/network/50-hakchi-usb.network`:
+
+```ini
+[Match]
+Driver=rndis_host
+
+[Network]
+DHCP=yes
+LinkLocalAddressing=ipv4
+```
+
+If a firewall is enabled (Omarchy ships with UFW on), allow the interface:
+
+```sh
+sudo ufw allow in on enp193s0f3u2
+```
+
+hakchi then goes from "Offline" to online within about 15 seconds.
+
+## Notes and known limitations
+
+- **Tiling window managers (Hyprland/Omarchy, i3, Sway):** if the main window stops responding, a dialog is
+  probably open behind it or on another workspace. Find it with `hyprctl clients` (Hyprland), or make the
+  main window float (Omarchy: **Super + T**).
+- **Driver install button:** that's a Windows-only step. On Linux the udev rule above replaces it.
+- **Still "Offline"?** Run hakchi with `./hakchi.sh /debug`: it logs `Found hakchi at its default USB address`
+  when it reaches the console. If not, check `ping 169.254.13.37` and the firewall rule from step 4.
+- **FTP / Telnet menu items** open with `xdg-open`. You can change the commands in `config.ini`
+  (`FtpCommand`, `TelnetCommand`).
+- **Readme / message-of-the-day panels** use plain text instead of the embedded browser.
+- **SFROM Tool** is a Windows program and is not available.
+
+## Building from source
+
+Needs the .NET SDK (8 or newer), Mono (for `resgen`) and `wget`:
+
+```sh
+git submodule update --init --recursive
+dotnet build hakchi_gui/hakchi_gui.csproj -c Release
+cp linux/hakchi.sh linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
+```
