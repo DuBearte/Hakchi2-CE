@@ -102,3 +102,46 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WORKFLOW_STATUS_WEBHOOK }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # resgen comes from Mono; see the MonoResGen target in hakchi_gui.csproj
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install -y mono-devel
+
+      - name: Prepare GamesDB API Key File
+        run: |
+          mkdir -p hakchi_gui/ApiKeys
+          printf '%s' "$GamesDBApiKey" > hakchi_gui/ApiKeys/TheGamesDB.txt
+        env:
+          GamesDBApiKey: ${{ secrets.GAMESDB_API_KEY }}
+
+      - name: Build
+        run: dotnet build hakchi_gui/hakchi_gui.csproj -c Release
+
+      - name: Package
+        run: |
+          out=hakchi_gui/bin/Release/net48
+          cp linux/hakchi.sh linux/99-hakchi.rules linux/README-linux.md "$out/"
+          rm -f "$out"/*.bat
+          mkdir -p dist
+          tar -czf dist/hakchi2-ce-linux.tar.gz --transform 's,^net48,hakchi2-ce,' -C hakchi_gui/bin/Release net48
+
+      # Uploaded as a tarball inside the artifact zip so the launcher keeps its executable bit
+      - name: Upload Artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hakchi2-ce-linux
+          path: dist/hakchi2-ce-linux.tar.gz
