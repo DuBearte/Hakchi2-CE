@@ -68,6 +68,10 @@ next to the program. Then:
 ./hakchi.sh
 ```
 
+The first run adds **Hakchi2 CE** to your desktop's app menu (for your user only), so from then on you can
+start it from there. If you move the folder, the next run updates the entry. To remove it and stop it from
+coming back: `./hakchi.sh --remove-desktop-entry` (undo with `./hakchi.sh --add-desktop-entry`).
+
 ## 4. Connect the console (USB network)
 
 Once hakchi is installed on the console, it shows up as a USB network device (`rndis_host`, an interface
@@ -127,5 +131,5 @@ Needs the .NET SDK (8 or newer), Mono (for `resgen`) and `wget`:
 ```sh
 git submodule update --init --recursive
 dotnet build hakchi_gui/hakchi_gui.csproj -c Release
-cp linux/hakchi.sh linux/hakchi-setup.sh linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
+cp linux/hakchi.sh linux/hakchi-setup.sh linux/hakchi2-ce.png linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
 ```
