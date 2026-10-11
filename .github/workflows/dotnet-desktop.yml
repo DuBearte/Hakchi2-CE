@@ -18,6 +18,8 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    # the release created below also carries the Linux build
+    needs: build-linux
 
     env:
       solution: 'hakchi_gui.sln'
@@ -83,6 +85,13 @@ jobs:
           name: hakchi2-ce-${{ env.displayVersion }}-installer
           path: ${{ github.workspace }}\hakchi_gui\bin\hakchi2-ce-${{ env.displayVersion }}-installer.exe
 
+      - name: Download Linux build for the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/download-artifact@v4
+        with:
+          name: hakchi2-ce-linux
+          path: hakchi_gui/bin
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -95,6 +104,7 @@ jobs:
           files: |
             hakchi_gui/bin/hakchi2-ce-${{ env.displayVersion }}-installer.exe
             hakchi_gui/bin/hakchi2-ce-${{ env.displayVersion }}-portable.zip
+            hakchi_gui/bin/hakchi2-ce-linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
