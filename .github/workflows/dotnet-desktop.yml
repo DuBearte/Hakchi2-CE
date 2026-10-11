@@ -134,7 +134,7 @@ jobs:
       - name: Package
         run: |
           out=hakchi_gui/bin/Release/net48
-          cp linux/hakchi.sh linux/99-hakchi.rules linux/README-linux.md "$out/"
+          cp linux/hakchi.sh linux/70-hakchi.rules linux/README-linux.md "$out/"
           rm -f "$out"/*.bat
           mkdir -p dist
           tar -czf dist/hakchi2-ce-linux.tar.gz --transform 's,^net48,hakchi2-ce,' -C hakchi_gui/bin/Release net48

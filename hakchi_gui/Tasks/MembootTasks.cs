@@ -65,6 +65,7 @@ namespace com.clusterrr.hakchi_gui.Tasks
             userRecovery = (hakchi.Shell.IsOnline && hakchi.MinimalMemboot && hakchi.UserMinimalMemboot);
 
             fel = new Fel();
+            fel.WriteLine += (string message) => Trace.WriteLine("[FEL] " + message);
             List<TaskFunc> taskList = new List<TaskFunc>();
             if (!hakchi.MinimalMemboot || forceRecoveryReload)
             {

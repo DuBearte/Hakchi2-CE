@@ -16,11 +16,12 @@ Other distros: install Mono (including its WinForms library), libgdiplus and lib
 ## 2. Allow USB access (once)
 
 ```sh
-sudo cp 99-hakchi.rules /etc/udev/rules.d/
+sudo cp 70-hakchi.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-Unplug and replug the console afterwards.
+Unplug and replug the console afterwards. (If you installed an older `99-hakchi.rules`, delete it:
+it was ordered after systemd's `73-seat-late.rules`, so it never granted access.)
 
 ## 3. Run
 
@@ -51,5 +52,5 @@ Needs the .NET SDK (8 or newer), Mono (for `resgen`) and `wget`:
 ```sh
 git submodule update --init --recursive
 dotnet build hakchi_gui/hakchi_gui.csproj -c Release
-cp linux/hakchi.sh linux/99-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
+cp linux/hakchi.sh linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
 ```
