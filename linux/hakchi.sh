@@ -1,6 +1,7 @@
 #!/bin/sh
 # Launches Hakchi2 CE under Mono on Linux.
 # Options: --remove-desktop-entry  remove the app menu entry and stop re-creating it
+# Distribution packages ship their own menu entry and set HAKCHI_NO_DESKTOP_ENTRY=1.
 here="$(cd "$(dirname "$0")" && pwd)"
 
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/hakchi2-ce"
@@ -27,7 +28,7 @@ if [ "${1:-}" = "--add-desktop-entry" ]; then
 fi
 
 # App menu entry for the current user; rewritten when this folder moves.
-if [ ! -e "$config_dir/no-desktop-entry" ] && ! grep -qF "Exec=\"$here/hakchi.sh\"" "$desktop_file" 2>/dev/null; then
+if [ -z "${HAKCHI_NO_DESKTOP_ENTRY:-}" ] && [ ! -e "$config_dir/no-desktop-entry" ] && ! grep -qF "Exec=\"$here/hakchi.sh\"" "$desktop_file" 2>/dev/null; then
   mkdir -p "${desktop_file%/*}"
   cat > "$desktop_file" <<EOF
 [Desktop Entry]
