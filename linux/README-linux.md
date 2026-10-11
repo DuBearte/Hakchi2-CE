@@ -1,6 +1,11 @@
 # Hakchi2 CE on Linux
 
 Hakchi2 CE is a Windows Forms app. On Linux it runs under [Mono](https://www.mono-project.com/).
+
+**Most people should use the AppImage** from the [Releases page](https://github.com/DuBearte/Hakchi2-CE/releases):
+it includes Mono, so you only download it, make it executable and run it (see the [main README](../README.md)).
+This guide covers the tarball, manual setup, troubleshooting and building.
+
 Linux support is new and has had little testing with real consoles, so **try memboot / adding games and
 syncing before you flash a custom kernel**, and keep your NAND backup safe.
 
