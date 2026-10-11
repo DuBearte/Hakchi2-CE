@@ -30,10 +30,10 @@ jobs:
         with:
           submodules: true
 
+      # repolevedavaj/install-nsis pulls from a single SourceForge mirror that serves runners a corrupt installer;
+      # Chocolatey is preinstalled on Windows runners and installs to C:\Program Files (x86)\NSIS, where the installer build looks.
       - name: Install NSIS
-        uses: repolevedavaj/install-nsis@v1.0.2
-        with:
-          nsis-version: '3.10'
+        run: choco install nsis -y --no-progress
 
       - name: Set up .NET Core SDK 3.0
         uses: actions/setup-dotnet@v4
