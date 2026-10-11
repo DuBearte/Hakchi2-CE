@@ -30,10 +30,10 @@ jobs:
         with:
           submodules: true
 
+      # repolevedavaj/install-nsis pulls from a single SourceForge mirror that serves runners a corrupt installer;
+      # Chocolatey is preinstalled on Windows runners and installs to C:\Program Files (x86)\NSIS, where the installer build looks.
       - name: Install NSIS
-        uses: repolevedavaj/install-nsis@v1.0.2
-        with:
-          nsis-version: '3.10'
+        run: choco install nsis -y --no-progress
 
       - name: Set up .NET Core SDK 3.0
         uses: actions/setup-dotnet@v4
@@ -102,3 +102,46 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WORKFLOW_STATUS_WEBHOOK }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # resgen comes from Mono; see the MonoResGen target in hakchi_gui.csproj
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install -y mono-devel
+
+      - name: Prepare GamesDB API Key File
+        run: |
+          mkdir -p hakchi_gui/ApiKeys
+          printf '%s' "$GamesDBApiKey" > hakchi_gui/ApiKeys/TheGamesDB.txt
+        env:
+          GamesDBApiKey: ${{ secrets.GAMESDB_API_KEY }}
+
+      - name: Build
+        run: dotnet build hakchi_gui/hakchi_gui.csproj -c Release
+
+      - name: Package
+        run: |
+          out=hakchi_gui/bin/Release/net48
+          cp linux/hakchi.sh linux/70-hakchi.rules linux/README-linux.md "$out/"
+          rm -f "$out"/*.bat
+          mkdir -p dist
+          tar -czf dist/hakchi2-ce-linux.tar.gz --transform 's,^net48,hakchi2-ce,' -C hakchi_gui/bin/Release net48
+
+      # Uploaded as a tarball inside the artifact zip so the launcher keeps its executable bit
+      - name: Upload Artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hakchi2-ce-linux
+          path: dist/hakchi2-ce-linux.tar.gz
