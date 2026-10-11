@@ -45,7 +45,15 @@ namespace com.clusterrr.ssh
                     if (listeners == null)
                     {
                         listeners = new List<IListener>();
-                        listeners.Add(new MdnsListener(serviceName, serviceType));
+                        try
+                        {
+                            listeners.Add(new MdnsListener(serviceName, serviceType));
+                        }
+                        catch (Exception ex)
+                        {
+                            // Tmds.MDns calls GetIPv6Properties(), which Mono does not implement on Linux; fall back to DNS lookups.
+                            Trace.WriteLine("mDNS discovery unavailable, falling back to DNS: " + ex.Message);
+                        }
                         listeners.Add(new DnsListener(serviceName));
                     }
 

@@ -33,20 +33,26 @@ namespace com.clusterrr.ssh
             if (DateTime.Now.Subtract(lastUpdated) > TimeSpan.FromSeconds(TTL))
             {
                 devices.Clear();
-                try
+                // Linux resolvers usually only answer mDNS names (avahi/systemd-resolved) with the .local suffix
+                var names = com.clusterrr.hakchi_gui.Shared.isWindows ? new[] { serviceName } : new[] { serviceName, serviceName + ".local" };
+                foreach (var name in names)
                 {
-                    IPHostEntry ihe = Dns.GetHostEntry(serviceName);
-                    if (ihe.AddressList != null && ihe.AddressList.Length > 0)
+                    try
                     {
-                        Trace.WriteLine($"DNS Resolution returned IPs: " + string.Join(", ", (IEnumerable<IPAddress>)ihe.AddressList));
-                        lastUpdated = DateTime.Now;
-                        foreach (var address in ihe.AddressList)
-                            devices.Add(new Device() { Addresses = new List<IPAddress>() { address }, Port = SshClientWrapper.DEFAULT_SSH_PORT });
+                        IPHostEntry ihe = Dns.GetHostEntry(name);
+                        if (ihe.AddressList != null && ihe.AddressList.Length > 0)
+                        {
+                            Trace.WriteLine($"DNS Resolution returned IPs: " + string.Join(", ", (IEnumerable<IPAddress>)ihe.AddressList));
+                            lastUpdated = DateTime.Now;
+                            foreach (var address in ihe.AddressList)
+                                devices.Add(new Device() { Addresses = new List<IPAddress>() { address }, Port = SshClientWrapper.DEFAULT_SSH_PORT });
+                            break;
+                        }
                     }
-                }
-                catch
-                {
-                    // no-op (dns resolution fail causes exception)
+                    catch
+                    {
+                        // no-op (dns resolution fail causes exception)
+                    }
                 }
             }
         }
