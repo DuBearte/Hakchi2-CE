@@ -32,14 +32,53 @@ next to the program. Then:
 ./hakchi.sh
 ```
 
+## 4. Connect the console (USB network)
+
+Once hakchi is installed on the console, it shows up as a USB network device (`rndis_host`, an interface
+like `enp…u2`) and always uses the address **169.254.13.37**. Your PC needs an address on the same
+link-local network, and your firewall must accept traffic from it.
+
+Quick test (lasts until you unplug; replace the interface name with yours from `ip -br link`):
+
+```sh
+sudo ip addr add 169.254.1.2/16 dev enp193s0f3u2
+ping -c 3 169.254.13.37
+```
+
+Permanent setup with NetworkManager (most desktops, including Omarchy):
+
+```sh
+sudo nmcli connection add type ethernet con-name hakchi match.driver rndis_host \
+  ipv4.method link-local ipv6.method link-local connection.autoconnect-priority 10
+```
+
+With systemd-networkd instead, create `/etc/systemd/network/50-hakchi-usb.network`:
+
+```ini
+[Match]
+Driver=rndis_host
+
+[Network]
+DHCP=yes
+LinkLocalAddressing=ipv4
+```
+
+If a firewall is enabled (Omarchy ships with UFW on), allow the interface:
+
+```sh
+sudo ufw allow in on enp193s0f3u2
+```
+
+hakchi then goes from "Offline" to online within about 15 seconds.
+
 ## Notes and known limitations
 
 - **Tiling window managers (Hyprland/Omarchy, i3, Sway):** if the main window stops responding, a dialog is
   probably open behind it or on another workspace. Find it with `hyprctl clients` (Hyprland), or make the
   main window float (Omarchy: **Super + T**).
 - **Driver install button:** that's a Windows-only step. On Linux the udev rule above replaces it.
-- **Network (SSH) connection:** once hakchi is installed, the console shows up as a USB Ethernet device.
-  If hakchi stays "Offline", set that connection's IPv4 method to **Link-Local Only** in your network settings.
+- **Still "Offline"?** Run hakchi with `./hakchi.sh /debug`: it logs `Found hakchi at its default USB address`
+  when it reaches the console. If not, check `ping 169.254.13.37` and the firewall rule from step 4.
 - **FTP / Telnet menu items** open with `xdg-open`. You can change the commands in `config.ini`
   (`FtpCommand`, `TelnetCommand`).
 - **Readme / message-of-the-day panels** use plain text instead of the embedded browser.
