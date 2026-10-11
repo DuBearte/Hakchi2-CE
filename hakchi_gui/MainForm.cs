@@ -320,6 +320,9 @@ namespace com.clusterrr.hakchi_gui
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            if (LinuxSetup.Available)
+                toolsToolStripMenuItem.DropDownItems.Add(new ToolStripMenuItem("Linux USB setup...", Resources.sign_cogs, (s, a) => LinuxSetup.Run(this)));
+
             if (ConfigIni.Instance.EnableCeUpdate)
             {
                 try // wrap upgrade check in an exception check, to avoid past mistakes
@@ -2858,6 +2861,7 @@ internal static
         }
 
         private int timerConnectionAnim = 0;
+        private int linuxSetupCheckTicks = 0;
         private void timerConnectionCheck_Tick(object sender, EventArgs e)
         {
             if (hakchi.Connected)
@@ -2874,6 +2878,10 @@ internal static
             {
                 toolStripStatusConnectionIcon.Image = Resources.red;
                 toolStripStatusLabelShell.Text = Resources.Offline;
+
+                // Linux: offer to set up the console's USB network link if nothing configured it (every ~5 s)
+                if (++linuxSetupCheckTicks % 10 == 0)
+                    LinuxSetup.CheckWhileOffline(this);
             }
         }
 
