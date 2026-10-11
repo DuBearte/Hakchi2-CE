@@ -2457,7 +2457,7 @@ internal static
             }
         }
 
-        private void openWebsiteLink(Object sender, EventArgs e) => Process.Start((string)((ToolStripMenuItem)sender).Tag);
+        private void openWebsiteLink(Object sender, EventArgs e) => Shared.OpenWithShell((string)((ToolStripMenuItem)sender).Tag);
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2745,7 +2745,7 @@ internal static
 
                 if (Tasks.MessageForm.Show(Resources.SfromTool, string.Format(Resources.DownloadSfromTool, Program.BaseDirectoryExternal), Resources.sign_globe, new Tasks.MessageForm.Button[] { Tasks.MessageForm.Button.Yes, Tasks.MessageForm.Button.No }, Tasks.MessageForm.DefaultButton.Button1) == Tasks.MessageForm.Button.Yes)
                 {
-                    Process.Start(SFROM_TOOL_URL);
+                    Shared.OpenWithShell(SFROM_TOOL_URL);
                 }
             }
 
@@ -3047,13 +3047,7 @@ internal static
             try
             {
                 string path = (sel[0].Tag as NesApplication).BasePath;
-                new Process()
-                {
-                    StartInfo = new ProcessStartInfo()
-                    {
-                        FileName = path
-                    }
-                }.Start();
+                Shared.OpenWithShell(path);
             }
             catch (Exception ex)
             {
