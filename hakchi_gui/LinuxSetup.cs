@@ -113,11 +113,14 @@ namespace com.clusterrr.hakchi_gui
             offered = true;
             var output = new StringBuilder();
             int exitCode;
+            // Run a copy: inside an AppImage the app lives on a FUSE mount that root can't read
+            var scriptCopy = Path.Combine(Path.GetTempPath(), "hakchi-setup-" + Guid.NewGuid().ToString("N") + ".sh");
             try
             {
+                File.Copy(scriptPath, scriptCopy);
                 var proc = new Process
                 {
-                    StartInfo = new ProcessStartInfo("pkexec", "\"" + scriptPath + "\" --user \"" + Environment.UserName + "\"")
+                    StartInfo = new ProcessStartInfo("pkexec", "/bin/sh \"" + scriptCopy + "\" --user \"" + Environment.UserName + "\"")
                     {
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -139,10 +142,17 @@ namespace com.clusterrr.hakchi_gui
             catch (Win32Exception)
             {
                 Tasks.MessageForm.Show(owner as Form, "Linux setup",
-                    "pkexec was not found, so hakchi can't ask for your password. Run this in a terminal instead:\n\nsudo \"" + scriptPath + "\"",
+                    "pkexec was not found, so hakchi can't ask for your password. Run this in a terminal instead:\n\nsudo sh \"" + scriptCopy + "\"",
                     Resources.sign_error);
+                return false; // keep the copy so the command above works
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Could not run hakchi-setup.sh: " + ex.Message);
+                try { File.Delete(scriptCopy); } catch { }
                 return false;
             }
+            try { File.Delete(scriptCopy); } catch { }
 
             Trace.WriteLine("hakchi-setup.sh exited with " + exitCode + ":\n" + output);
             if (exitCode == 0)
