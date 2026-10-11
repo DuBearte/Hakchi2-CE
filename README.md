@@ -1,12 +1,11 @@
 # Hakchi2 CE
 
 Hakchi2 CE lets you add more games to your NES Classic Mini and SNES Classic Mini (and their Famicom/Super
-Famicom variants). This is a fork of [TeamShinkansen/Hakchi2-CE](https://github.com/TeamShinkansen/Hakchi2-CE)
-that adds **Linux support**.
+Famicom variants). It runs on **Windows** and **Linux**.
 
 ## Download
 
-Get the latest version from the **[Releases page](https://github.com/DuBearte/Hakchi2-CE/releases)**:
+Get the latest version from the **[Releases page](https://github.com/TeamShinkansen/Hakchi2-CE/releases)**:
 
 | System | File |
 | --- | --- |
