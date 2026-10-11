@@ -19,7 +19,22 @@ is untested so far; reports welcome.
 Other distros: install Mono (including its WinForms library), libgdiplus and libusb 1.0 from your package manager.
 Arch-based distros have been tested with a real console; Debian/Ubuntu are what the CI build runs on.
 
-## 2. Allow USB access (once)
+## 2. USB and network setup (once)
+
+**Easiest:** just start hakchi (step 3) and plug in your console. If USB access or the console's network link
+isn't set up yet, hakchi offers to do it and asks for your password once. You can also run it any time from
+**Tools → Linux USB setup...**, or from a terminal:
+
+```sh
+sudo ./hakchi-setup.sh            # set everything up
+sudo ./hakchi-setup.sh --uninstall  # undo it
+```
+
+It installs the udev rule below (or the plugdev variant on distros without systemd), adds the network profile
+from step 4 (NetworkManager or systemd-networkd) and allows the console's address in ufw/firewalld. It's safe to
+run more than once. The rest of this section and step 4 describe the same steps done by hand.
+
+### Doing it by hand
 
 ```sh
 sudo cp 70-hakchi.rules /etc/udev/rules.d/
@@ -112,5 +127,5 @@ Needs the .NET SDK (8 or newer), Mono (for `resgen`) and `wget`:
 ```sh
 git submodule update --init --recursive
 dotnet build hakchi_gui/hakchi_gui.csproj -c Release
-cp linux/hakchi.sh linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
+cp linux/hakchi.sh linux/hakchi-setup.sh linux/70-hakchi.rules linux/README-linux.md hakchi_gui/bin/Release/net48/
 ```

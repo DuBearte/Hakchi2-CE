@@ -89,6 +89,22 @@ namespace com.clusterrr.hakchi_gui.Tasks
             }
             formButtons[(int)defaultButton].Select();
 
+            if (!Shared.isWindows)
+            {
+                // Mono neither wraps an auto-sized label nor grows the AutoSize form around it, and it lays the Fill
+                // panel out over the docked button strip, so long messages get clipped. Let the label wrap, dock the
+                // Fill panel last (front of the z-order), and size the window to the measured text plus the buttons.
+                var label = form.messageLabel;
+                label.AutoSize = false;
+                form.panel.BringToFront();
+                var textSize = TextRenderer.MeasureText(message ?? "", label.Font,
+                    new Size(form.panel3.Width - label.Padding.Horizontal, int.MaxValue), TextFormatFlags.WordBreak);
+                int textHeight = Math.Max(textSize.Height + label.Padding.Vertical + 12,
+                    form.pictureBox1.Bottom + form.pictureBox1.Top);
+                form.AutoSize = false;
+                form.ClientSize = new Size(form.ClientSize.Width, textHeight + form.panel1.Height);
+            }
+
             return form;
         }
 
